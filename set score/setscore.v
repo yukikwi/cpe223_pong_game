@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 11/14/2020 01:37:29 PM
+// Create Date: 11/14/2020 07:08:45 PM
 // Design Name: 
-// Module Name: breadboard
+// Module Name: setscore
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -20,23 +20,20 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module breadboard(
-    input [1:0] pmod,
-    input clk,
-    output reg [1:0] out
+module setscore(
+    input plus, min, clk,
+    output reg [5:0] score
     );
-    
+    initial
+        score = 0;
+        
     always @ (posedge clk)
     begin
-        if(pmod[0])
-            out[0] = 0;
-        else
-            out[0] = 1;
-            
-        if(pmod[1])
-            out[1] = 0;
-        else
-            out[1] = 1;
+        if(score <= 20) //set max score to 20
+            if(~plus)
+                score = score + 1;
+        if(score > 0)
+            if(~min)
+                score = score - 1;
     end
-    
 endmodule
