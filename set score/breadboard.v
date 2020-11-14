@@ -29,14 +29,14 @@ module breadboard(
     always @ (posedge clk)
     begin
         if(pmod[0])
-            out[0] = 0;
+            out[0] <= 0;
         else
-            out[0] = 1;
+            out[0] <= 1;
             
         if(pmod[1])
-            out[1] = 0;
+            out[1] <= 0;
         else
-            out[1] = 1;
+            out[1] <= 1;
     end
     
 endmodule

@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 11/14/2020 01:37:29 PM
+// Create Date: 11/14/2020 07:08:05 PM
 // Design Name: 
-// Module Name: breadboard
+// Module Name: score
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -20,23 +20,19 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module breadboard(
-    input [1:0] pmod,
+module score(
+    input [1:0] JB,
     input clk,
-    output reg [1:0] out
+    output [4:0] led,
+    output [1:0] debugled
     );
+    wire [1:0] controller1;
+    wire clk_out;
+    wire clk_out2;
+    //init
+    divide delay_input(clk, clk_out);
+    divide2 delay_input2(clk, clk_out_2);
+    setscore setmaxscore(~JB[0], ~JB[1], clk_out_2, led);
     
-    always @ (posedge clk)
-    begin
-        if(pmod[0])
-            out[0] = 0;
-        else
-            out[0] = 1;
-            
-        if(pmod[1])
-            out[1] = 0;
-        else
-            out[1] = 1;
-    end
-    
+    assign debugled = controller1;
 endmodule

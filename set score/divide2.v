@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 11/14/2020 01:37:29 PM
+// Create Date: 10/30/2020 10:45:03 AM
 // Design Name: 
-// Module Name: breadboard
+// Module Name: divide
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -20,23 +20,21 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module breadboard(
-    input [1:0] pmod,
-    input clk,
-    output reg [1:0] out
+module divide2(
+    input clock,
+    output clk_out
     );
-    
-    always @ (posedge clk)
-    begin
-        if(pmod[0])
-            out[0] = 0;
+    reg elapsed;
+    reg elapsed2;
+    reg [27:0] state;
+     
+    always @(posedge clock)
+        if (state == 50000000) 
+            state <= 0;
         else
-            out[0] = 1;
-            
-        if(pmod[1])
-            out[1] = 0;
-        else
-            out[1] = 1;
-    end
-    
+            state <= state+1;
+    always @(state)
+        if (state == 50000000) elapsed = 1;
+        else elapsed = 0;
+    assign clk_out = elapsed;
 endmodule
