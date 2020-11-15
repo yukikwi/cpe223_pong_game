@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
-// Engineer: 
+// Engineer: Phawit Pukamkom, Thanawat Sophiphong, Pachara Chantawong
 // 
 // Create Date: 11/14/2020 02:33:19 PM
 // Design Name: 
@@ -22,20 +22,19 @@
 
 module draw_ball(
     input clk,
-    input [0:0]sw,
+    input [1:0]sw,
     input wire btnU,
     input wire btnL,
     input wire btnR,
     input wire btnD,
+    input wire btnC,
     output wire hsync,
     output wire vsync,
-    output reg[11:0] rgb
+    output reg[11:0] rgb,
+    output [15:0] led
     );
-    
-//    wire h_sync, v_sync;
     wire [9:0] x,y;
     wire clk_pix;
-    //reg data_en;
     
     vga_sync display (.clk(clk), .reset(sw[0]), .hsync(hsync), 
                         .vsync(vsync), .video_on(), .p_tick(clk_pix), .x(x), .y(y));
@@ -47,12 +46,70 @@ module draw_ball(
     reg [3:0] ball_speed_x = 2;
     reg [3:0] ball_speed_y = 2;
     reg [9:0] ball_x = 0;
-    reg [9:0] ball_y = 0;
+    reg [9:0] ball_y = 235;
     
     reg [4:0] border_width = 10;
     
     reg dx, dy;
     
+    reg right_hit = 0;
+    reg left_hit = 0;
+    
+    //game state
+    integer state, next_state;
+    parameter start = 0, play = 1, end_point = 2;
+    
+    //debug state
+    assign debugled = state;
+    
+    wire p1_up = btnU;
+    wire p1_down = btnD;
+    wire p2_up = btnL;
+    wire p2_down = btnR;
+    wire launch = btnC;  
+//    integer right_score, left_score;
+    
+//    assign led[4:0] = right_score[4:0];
+//    assign led[15:11] = left_score[4:0];    
+    initial 
+        begin 
+            state = start; 
+//            left_score = 0;
+//            right_score = 0;
+        end
+    always @ (*)
+    begin
+        case(state)
+        start:
+                begin
+                    if (launch)
+                        next_state = play;
+                    else next_state = start;
+                end
+        play:
+                begin
+                    if (left_hit || right_hit)
+                    begin
+//                        if(left_hit)
+//                            right_score = right_score + 1;
+//                        if(right_hit)
+//                            left_score = left_score + 1;
+                        next_state = end_point;
+                    end
+                    else next_state = play;
+                end
+        end_point:
+                begin
+                    next_state = start;
+                end
+            
+        endcase 
+    end
+    
+    always @ (posedge clk_pix)
+    begin
+        state <= next_state;
+    end
     
     //drawing start here --------------------------------
     
@@ -62,13 +119,11 @@ module draw_ball(
     begin
         ball_draw = (x < ball_x + ball_size)&&(x >= ball_x)&&(y < ball_y + ball_size)&&(y >= ball_y);
     end
-    //draw border line
     reg border_H;
     reg border_V;
     
     always @ (*)
     begin
-        //border = (x < H_screen) && (y < border_width) || (y >= V_screen - border_width && y < V_screen);
         border_H = (x < H_screen) && ((y < border_width) || (y >= V_screen - border_width && y < V_screen));
         border_V = (x < border_width) || (x >= H_screen - border_width && x < H_screen) && (y < V_screen);
     end
@@ -79,7 +134,7 @@ module draw_ball(
     reg [4:0] p_offset = 20;
     reg [9:0] p1_y = 192;
     reg [9:0] p2_y = 192;
-    reg [2:0] p_speed = 1;
+    reg [2:0] p_speed = 2;
     reg p1_draw, p2_draw;
     
     always @ (*)
@@ -116,7 +171,15 @@ module draw_ball(
     //ball animation
     always @ (posedge clk_pix)
     begin
-        if (animate)
+        if (state == start)
+        begin
+            ball_x <= border_width + p_offset + p_width;
+            ball_y <= 235;
+            right_hit <= 0;
+            left_hit <= 0;
+            
+        end
+        else if (animate)
         begin
             if(p1_col) //p1_collision
             begin
@@ -128,45 +191,39 @@ module draw_ball(
                 dx <= 1; 
                 ball_x <= ball_x - ball_speed_x;
             end
-            //if (ball_x >= H_screen - (ball_size + ball_speed_x))
             else if (ball_x >= H_screen - (ball_size + ball_speed_x + border_width))
             begin
-                dx <= 1; //right edge
-                ball_x <= ball_x - ball_speed_x;
+                  right_hit <= 1;
             end
-            //else if(ball_x < ball_speed_x)
             else if(ball_x < border_width + 1)
             begin
-                dx <= 0; //left edge
-                ball_x <= ball_x + ball_speed_x;
+                  left_hit <= 1;
             end
             else ball_x = (dx)?ball_x - ball_speed_x : ball_x + ball_speed_x;
             
-            //if (ball_y >= V_screen - (ball_size + ball_speed_y))
             if (ball_y >= V_screen - (ball_size + ball_speed_y + border_width))
             begin
                 dy <= 1; //bottom edge
                 ball_y <= ball_y - ball_speed_y;
             end
-            //else if(ball_y < ball_speed_y)
             else if(ball_y < border_width + 1)
             begin
                 dy <= 0; //top edge
                 ball_y <= ball_y + ball_speed_y;
             end
             else ball_y = (dy)?ball_y - ball_speed_y : ball_y + ball_speed_y;
-
         end
     end
     
     //paddle animation
-    wire p1_up = btnU;
-    wire p1_down = btnD;
-    wire p2_up = btnL;
-    wire p2_down = btnR; 
-    
+ 
     always @ (posedge clk_pix)
     begin
+        if(state == start)
+        begin
+            p1_y <= 192;
+            p2_y <= 192;
+        end
         if(animate)
         begin
             if (p1_up)
