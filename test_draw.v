@@ -23,14 +23,26 @@
 module draw_ball(
     input clk,
     input [0:0]sw,
-    input wire btnU,
-    input wire btnL,
-    input wire btnR,
-    input wire btnD,
+    input [1:0] JA,
+    input [1:0] JB,
     output wire hsync,
     output wire vsync,
-    output reg[11:0] rgb
+    output reg[11:0] rgb,
+    output [3:0] debugled
     );
+    
+    wire btnU;
+    wire btnL;
+    wire btnR;
+    wire btnD;
+    wire clk_2;
+    wire [1:0] out_controller1;
+    breadboard controller1(JA, clk  , out_controller1);
+    assign btnD = ~out_controller1[0];
+    assign btnU = ~out_controller1[1];
+    assign btnL = ~JB[0];
+    assign btnR = ~JB[1];
+    assign debugled = {out_controller1, JB};
     
 //    wire h_sync, v_sync;
     wire [9:0] x,y;
