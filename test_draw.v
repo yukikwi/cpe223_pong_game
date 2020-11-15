@@ -38,10 +38,12 @@ module draw_ball(
     wire clk_2;
     wire [1:0] out_controller1;
     breadboard controller1(JA, clk  , out_controller1);
+    wire [1:0] out_controller2;
+    breadboard controller2(JB, clk  , out_controller2);
     assign btnD = ~out_controller1[0];
     assign btnU = ~out_controller1[1];
-    assign btnL = ~JB[0];
-    assign btnR = ~JB[1];
+    assign btnL = ~out_controller2[0];
+    assign btnR = ~out_controller2[1];
     assign debugled = {out_controller1, JB};
     
 //    wire h_sync, v_sync;
