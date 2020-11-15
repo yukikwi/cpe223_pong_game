@@ -21,20 +21,41 @@
 
 
 module breadboard(
-    input [1:0] pmod,
+    inout [1:0] pmod,
     input clk,
     output reg [1:0] out
     );
+    initial
+        out = 2'b11;
     
+    reg [1:0] store_pmod = 2'b00;
     always @ (posedge clk)
     begin
         if(pmod[0])
-            out[0] = 0;
+            if(store_pmod[0] == 0)
+                begin
+                    out[0] = 1;
+                    store_pmod[1] = 1;
+                end
+            else
+                begin
+                    out[0] = 0;
+                    store_pmod[0] = 0;
+                end
         else
             out[0] = 1;
             
         if(pmod[1])
-            out[1] = 0;
+            if(store_pmod[1] == 0)
+                begin
+                    out[1] = 1;
+                    store_pmod[1] = 1;
+                end
+            else
+                begin
+                    out[1] = 0;
+                    store_pmod[1] = 0;
+                end
         else
             out[1] = 1;
     end
