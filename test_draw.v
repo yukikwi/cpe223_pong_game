@@ -23,10 +23,10 @@
 module draw_ball(
     input clk,
     input [0:0]sw,
-    input btnU,
-    input btnL,
-    input btnR,
-    input btnD,
+    input wire btnU,
+    input wire btnL,
+    input wire btnR,
+    input wire btnD,
     output wire hsync,
     output wire vsync,
     output reg[11:0] rgb
@@ -108,13 +108,12 @@ module draw_ball(
         end
         else if (ball_draw)
         begin
-            if((ball_x < p_offset + border_width + p_width) && ((ball_y + ball_size > p1_y) || (ball_y < p1_y + p_high)))
-                p1_col <= 1;
-            if((ball_x > H_screen - (p_offset + border_width + p_width)) && ((ball_y + ball_size > p1_y) || (ball_y < p1_y + p_high)))
-                p1_col <= 1;
+            if(p1_draw) p1_col <= 1;
+            if(p2_draw) p2_col <= 1;
         end
     end
-    
+
+    //ball animation
     always @ (posedge clk_pix)
     begin
         if (animate)
@@ -160,7 +159,39 @@ module draw_ball(
         end
     end
     
+    //paddle animation
+    wire p1_up = btnU;
+    wire p1_down = btnD;
+    wire p2_up = btnL;
+    wire p2_down = btnR; 
     
+    always @ (posedge clk_pix)
+    begin
+        if(animate)
+        begin
+            if (p1_up)
+            begin
+                if(p1_y > border_width)
+                    p1_y <= p1_y - p_speed;
+            end
+            else if (p1_down)
+            begin
+                if(p1_y < V_screen - (border_width + p_high))
+                    p1_y <= p1_y + p_speed;
+            end
+            
+            if (p2_up)
+            begin
+                if(p2_y > border_width)
+                    p2_y <= p2_y - p_speed;
+            end
+            else if (p2_down)
+            begin
+                if(p2_y < V_screen - (border_width + p_high))
+                    p2_y <= p2_y + p_speed;
+            end
+        end
+    end
     
     always @ (posedge clk)
     begin
