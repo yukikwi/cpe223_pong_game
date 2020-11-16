@@ -106,13 +106,46 @@ module draw_ball(
         state <= next_state;
     end
     
-    //scoring
-    wire [4:0] led_encode;
-    counter couter_p1(right_hit, sw[1], led_encode);
-    always @ (led_encode)
-    begin
-        led = led_encode;
+        // 7seg//score
+    reg [4:0] score_p1;
+    reg [4:0] score_p2;
+    wire [6:0] displayP1_first;
+    wire [6:0] displayP1_second;
+    wire [6:0] displayP2_first;
+    wire [6:0] displayP2_second;
+    wire seg_firstP1;
+    wire seg_secondP1;
+    wire seg_firstP2;
+    wire seg_secondP2;
+    wire clk1Hz;
+    
+    initial begin
+        score_p1 = 5'b0;
+        score_p2 = 5'b0;
     end
+    
+    //scoring
+    wire [4:0] right_score, left_score;
+    counter couter_p1(right_hit, sw[1], left_score);
+    counter couter_p2(left_hit, sw[1], right_score);
+    always @ (left_score)
+    begin
+        score_p1 = left_score;
+    end
+    always @ (right_score)
+    begin
+        score_p2 = right_score;
+    end
+    
+    display_score score_player1(score_p1 , displayP1_first , displayP1_second);
+    display_score score_player2(score_p2 , displayP2_first , displayP2_second);
+    
+    display_seg show_scoreP1First(displayP1_first , 242 , border_width + 15 , x , y , seg_firstP1);
+    display_seg show_scoreP1Second(displayP1_second , 276 , border_width + 15 , x , y , seg_secondP1);
+    display_seg show_scoreP2First(displayP2_first , 340 , border_width + 15 , x , y , seg_firstP2);
+    display_seg show_scoreP2Second(displayP2_second , 374 , border_width + 15 , x , y , seg_secondP2);
+    //end 7seg
+    //End scoring
     
     //drawing start here --------------------------------
     
@@ -170,7 +203,7 @@ module draw_ball(
             if(p2_draw) p2_col <= 1;
         end
     end
-
+    
     //ball animation
     always @ (posedge clk_pix)
     begin
@@ -264,8 +297,14 @@ module draw_ball(
     
     always @ (posedge clk)
     begin
-        if(ball_draw || border_H || border_V || p1_draw || p2_draw)
+        if(border_H || border_V || seg_firstP1 || seg_secondP1 || seg_firstP2 || seg_secondP2)
             rgb <= 12'hfff;
+        else if(ball_draw)
+            rgb <= 12'h3f0;
+        else if(p1_draw)
+            rgb <= 12'h03F;
+        else if(p2_draw)
+            rgb <= 12'hf00;
         else rgb = 12'h000;
     end
     
