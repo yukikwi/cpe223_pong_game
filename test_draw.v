@@ -49,6 +49,7 @@ module draw_ball(
 //    wire h_sync, v_sync;
     wire [9:0] x,y;
     wire clk_pix;
+//    reg data_en;
     
     vga_sync display (.clk(clk), .reset(sw[0]), .hsync(hsync), 
                         .vsync(vsync), .video_on(), .p_tick(clk_pix), .x(x), .y(y));
@@ -295,7 +296,7 @@ module draw_ball(
     
     always @ (posedge clk_pix)
     begin
-        if(border_H || border_V || seg_firstP1 || seg_secondP1)
+        if(border_H || border_V || seg_firstP1 || seg_secondP1 || seg_firstP2 || seg_secondP2)
             rgb <= 12'hfff;
         else if(ball_draw)
             rgb <= 12'h3f0;

@@ -26,47 +26,57 @@ module display_seg(
     input [9:0] start_y,
     input [9:0] x,
     input [9:0] y,
-    output reg display
+    output display
     );
+    reg [6:0] display_temp;
     initial
-        display = 0;
-        
+    begin   
+        display_temp = 7'b0;
+    end
     always @*
     begin
         if(~seg[0])
             begin
-                if((x >= (start_x + 4) && x <= (start_x + 20)) && (y >= start_y && y <= (start_y + 4)))
-                    display = 1;
+                if((x >= (start_x + 5) && x < (start_x + 21)) && (y >= start_y && y < (start_y + 4))) 
+                    display_temp[0] = 1;
+                else display_temp[0] = 0;
             end
         if(~seg[1])
             begin
-                if(((x >= start_x + 20) && x <= (start_x + 24)) && (y >= (start_y + 4) && y <= (start_y + 16)))
-                    display = 1;
+                if(((x >= start_x + 22) && x < (start_x + 26)) && (y >= (start_y + 5) && y < (start_y + 17)))
+                    display_temp[1] = 1;
+                else display_temp[1] = 0;
             end
         if(~seg[2])
             begin
-                if(((x >= start_x + 20) && x <= (start_x + 24)) && (y >= (start_y + 20) && y <= (start_y + 32)))
-                    display = 1;
+                if(((x >= start_x + 22) && x < (start_x + 26)) && (y >= (start_y + 23) && y < (start_y + 35)))
+                    display_temp[2] = 1;
+                else display_temp[2] = 0;
             end
         if(~seg[3])
             begin
-                if((x >= (start_x + 4) && x <= (start_x + 20)) && (y >= (start_y + 32) && y <= (start_y + 36)))
-                    display = 1;
+                if((x >= (start_x + 5) && x < (start_x + 21)) && (y >= (start_y + 36) && y < (start_y + 40)))
+                    display_temp[3] = 1;
+                else display_temp[3] = 0;
             end
         if(~seg[4])
             begin
-                if((x >= start_x && x <= (start_x + 4)) && (y >= (start_y + 20) && y <= (start_y + 32)))
-                    display = 1;
+                if((x >= start_x && x < (start_x + 4)) && (y >= (start_y + 23) && y < (start_y + 35)))
+                    display_temp[4] = 1;
+                else display_temp[4] = 0;
             end
         if(~seg[5])
             begin
-                if((x >= start_x && x <= (start_x + 4)) && (y >= (start_y + 4) && y <= (start_y + 16)))
-                    display = 1;
+                if((x >= start_x && x < (start_x + 4)) && (y >= (start_y + 5) && y < (start_y + 17)))
+                    display_temp[5] = 1;
+                else display_temp[5] = 0;
             end
         if(~seg[6])
             begin
-                if((x >= (start_x + 4) && x <= (start_x + 20)) && (y >= (start_y + 32) && y <= (start_y + 36)))
-                    display = 1;
+                if((x >= (start_x + 5) && x < (start_x + 21)) && (y >= (start_y + 18) && y < (start_y + 22)))
+                    display_temp[6] = 1;
+                else display_temp[6] = 0;
             end
     end
+   assign display = (display_temp[0] | display_temp[1] | display_temp[2] |display_temp[3] | display_temp[4] | display_temp[5] | display_temp[6]);
 endmodule
