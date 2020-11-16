@@ -31,7 +31,7 @@ module draw_ball(
     output wire hsync,
     output wire vsync,
     output reg[11:0] rgb,
-    output [4:0] led
+    output reg[4:0] led
     );
     wire [9:0] x,y;
     wire clk_pix;
@@ -104,6 +104,14 @@ module draw_ball(
     always @ (posedge clk_pix)
     begin
         state <= next_state;
+    end
+    
+    //scoring
+    wire [4:0] led_encode;
+    counter couter_p1(right_hit, sw[1], led_encode);
+    always @ (led_encode)
+    begin
+        led = led_encode;
     end
     
     //drawing start here --------------------------------
