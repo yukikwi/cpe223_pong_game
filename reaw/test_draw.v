@@ -58,27 +58,21 @@ module draw_ball(
     //game state
     integer state, next_state;
     parameter start = 0, play = 1, end_point = 2;
-    
-    //debug state
-    assign debugled = state;
+   
     
     wire p1_up = btnU;
     wire p1_down = btnD;
     wire p2_up = btnL;
     wire p2_down = btnR;
     wire launch = btnC;  
-    integer right_score, left_score, score_set;
     
-//    assign led[15:11] = left_score[4:0];    
+    reg start_player;
+    
     initial 
         begin 
             state = start; 
-//            left_score = 0;
-            right_score = 0;
-            score_set = 0;
         end
-    
-    assign led = right_score[4:0];
+        
     always @ (clk_pix)
     begin
         case(state)
@@ -92,19 +86,10 @@ module draw_ball(
                 begin
                     if (left_hit || right_hit)
                     begin
-                        if(left_hit == 1 && score_set == 0)
-                            begin
-                                score_set = 1;
-                                right_score = right_score + 1;
-                                next_state = end_point;
-                            end
-                            
-//                        if(right_hit)
-//                            left_score = left_score + 1;
+                        next_state = end_point;
                     end
                     else 
                         begin
-                            score_set = 0;
                             next_state = play;
                         end
                 end
@@ -183,8 +168,16 @@ module draw_ball(
     begin
         if (state == start)
         begin
-            ball_x <= border_width + p_offset + p_width;
-            ball_y <= 235;
+            if (start_player == 0)
+            begin
+                ball_x <= border_width + p_offset + p_width;
+                ball_y <= 235;
+            end
+            else
+            begin
+                ball_x <= H_screen - (border_width + p_offset + p_width + ball_size);
+                ball_y <= 235;
+            end
             right_hit <= 0;
             left_hit <= 0;
         end
@@ -203,10 +196,12 @@ module draw_ball(
             else if (ball_x >= H_screen - (ball_size + ball_speed_x + border_width))
             begin
                   right_hit <= 1;
+                  start_player <= 1;
             end
             else if(ball_x < border_width + 1)
             begin
                   left_hit <= 1;
+                  start_player <= 0;
             end
             else ball_x = (dx)?ball_x - ball_speed_x : ball_x + ball_speed_x;
             
