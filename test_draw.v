@@ -38,10 +38,12 @@ module draw_ball(
     wire clk_2;
     wire [1:0] out_controller1;
     breadboard controller1(JA, clk  , out_controller1);
+    wire [1:0] out_controller2;
+    breadboard controller2(JB, clk  , out_controller2);
     assign btnD = ~out_controller1[0];
     assign btnU = ~out_controller1[1];
-    assign btnL = ~JB[0];
-    assign btnR = ~JB[1];
+    assign btnL = ~out_controller2[0];
+    assign btnR = ~out_controller2[1];
     assign debugled = {out_controller1, JB};
     
 //    wire h_sync, v_sync;
@@ -205,10 +207,45 @@ module draw_ball(
         end
     end
     
-    always @ (posedge clk)
+    //score
+    reg [4:0] score_p1;
+    reg [4:0] score_p2;
+    wire [6:0] displayP1_first;
+    wire [6:0] displayP1_second;
+    wire [6:0] displayP2_first;
+    wire [6:0] displayP2_second;
+    wire seg_firstP1;
+    wire seg_secondP1;
+    wire seg_firstP2;
+    wire seg_secondP2;
+    wire clk1Hz;
+    
+    initial begin
+        score_p1 = 5'b0;
+        score_p2 = 5'b0;
+    end
+    
+    divider clk1Hz_divide(clk , clk1Hz);
+    always @(posedge clk1Hz)
+        score_p1 = score_p1 + 1;
+    display_score score_player1(score_p1 , displayP1_first , displayP1_second);
+    display_score score_player2(score_p2 , displayP2_first , displayP2_second);
+    
+    display_seg show_scoreP1First(displayP1_first , 242 , border_width + 15 , x , y , seg_firstP1);
+    display_seg show_scoreP1Second(displayP1_second , 276 , border_width + 15 , x , y , seg_secondP1);
+    display_seg show_scoreP2First(displayP2_first , 340 , border_width + 15 , x , y , seg_firstP2);
+    display_seg show_scoreP2Second(displayP2_second , 374 , border_width + 15 , x , y , seg_secondP2);
+    
+    always @ (posedge clk_pix)
     begin
-        if(ball_draw || border_H || border_V || p1_draw || p2_draw)
+        if(border_H || border_V || seg_firstP1 || seg_secondP1)
             rgb <= 12'hfff;
+        else if(ball_draw)
+            rgb <= 12'h3f0;
+        else if(p1_draw)
+            rgb <= 12'h03F;
+        else if(p2_draw)
+            rgb <= 12'hf00;
         else rgb = 12'h000;
     end
     
