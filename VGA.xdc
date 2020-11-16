@@ -61,3 +61,32 @@ set_property PACKAGE_PIN R19 [get_ports vsync]
 
 set_property PACKAGE_PIN U18 [get_ports reset]						
         set_property IOSTANDARD LVCMOS33 [get_ports reset]
+        
+##Pmod Header JA
+##Sch name = JA1
+set_property PACKAGE_PIN J1 [get_ports {JA[0]}]					
+	set_property IOSTANDARD LVCMOS33 [get_ports {JA[0]}]
+##Sch name = JA2
+set_property PACKAGE_PIN L2 [get_ports {JA[1]}]					
+	set_property IOSTANDARD LVCMOS33 [get_ports {JA[1]}]
+
+
+
+##Pmod Header JB
+##Sch name = JB1
+set_property PACKAGE_PIN A14 [get_ports {JB[0]}]					
+	set_property IOSTANDARD LVCMOS33 [get_ports {JB[0]}]
+###Sch name = JB2
+set_property PACKAGE_PIN A16 [get_ports {JB[1]}]					
+	set_property IOSTANDARD LVCMOS33 [get_ports {JB[1]}]
+
+#DEBUGLED
+set_property PACKAGE_PIN P3 [get_ports {debugled[0]}]					
+	set_property IOSTANDARD LVCMOS33 [get_ports {debugled[0]}]
+set_property PACKAGE_PIN N3 [get_ports {debugled[1]}]					
+	set_property IOSTANDARD LVCMOS33 [get_ports {debugled[1]}]
+set_property PACKAGE_PIN P1 [get_ports {debugled[2]}]					
+	set_property IOSTANDARD LVCMOS33 [get_ports {debugled[2]}]
+set_property PACKAGE_PIN L1 [get_ports {debugled[3]}]					
+	set_property IOSTANDARD LVCMOS33 [get_ports {debugled[3]}]
+	
