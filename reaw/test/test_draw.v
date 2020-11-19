@@ -31,7 +31,7 @@ module draw_ball(
     output wire hsync,
     output wire vsync,
     output reg[11:0] rgb,
-    output reg[4:0] led
+    output [5:0] led
     );
     wire [9:0] x,y;
     wire clk_pix;
@@ -58,6 +58,7 @@ module draw_ball(
     //game state
     integer state, next_state;
     parameter menu = 0, set = 1, start = 2, play = 3, end_point = 4, end_game = 5;
+    wire delayed;
     
     wire p1_up = btnU;
     wire p1_down = btnD;
@@ -66,25 +67,53 @@ module draw_ball(
     wire launch = btnC;  
     
     reg start_player;
+    integer pre_launch;
     
     initial 
         begin 
+            pre_launch = 0;
             state = menu; 
         end
-        
-    always @ (clk_pix)
+    reg [3:0] led_worker = 4'b0000;
+    wire clk_f;
+    fuckingcounter clk_fm(clk, clk_f);
+    assign led[0] = pre_launch;
+    assign led[1] = launch;
+    assign led[2] = led_worker[0];
+    assign led[3] = led_worker[1];
+    assign led[4] = led_worker[2];
+    assign led[5] = led_worker[3];
+    always @ (clk_f or left_hit or right_hit)
     begin
         case(state)
         menu:
                 begin
-                    if (launch)
-                        next_state = start;
-                    else next_state = menu;
+                    if(pre_launch == 1 && launch == 0)
+                            begin
+                                next_state = start;
+                                led_worker[4] = 1;
+                            end
+                    else
+                        begin
+                            if(launch == 1)
+                            begin
+                                led_worker[1] <= 1;
+                                pre_launch = 1;
+                            end
+                            else
+                            begin
+                                led_worker[2] <= 1;
+                                pre_launch = 0;
+                            end
+                        end
                 end
         start:
                 begin
-                    if (launch)
-                        next_state = play;
+                    led_worker[0] = 1;
+                    if(launch == 1)
+                        begin
+                            next_state = play;
+                        end
                     else next_state = start;
                 end
         play:
@@ -157,7 +186,7 @@ module draw_ball(
     //draw menu
     reg menu_draw;
     reg menu_border;
-    reg score_based = 0;
+    wire score_based;
     
     //reg button_ctrl;
     
@@ -227,22 +256,7 @@ module draw_ball(
         animate = (y == 480 && x == 0);
     end
     
-    reg button_ctrl;
-    always @ (posedge clk_pix)
-    begin
-        if(state == menu)
-        begin
-            if(animate)
-            begin
-                if(p1_up && ~button_ctrl)
-                begin
-                    score_based = ~score_based;
-                    button_ctrl = 1;
-                end
-                else if(button_ctrl) button_ctrl = 0;
-            end
-        end
-    end
+    menu_ctrl controller_menu(p1_up, p1_down, animate, state, menu, score_based);
     
     
     //colision detection
