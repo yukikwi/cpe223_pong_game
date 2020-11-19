@@ -31,7 +31,7 @@ module draw_ball(
     output wire hsync,
     output wire vsync,
     output reg[11:0] rgb,
-    output reg[4:0] led
+    output [4:0] led
     );
     wire [9:0] x,y;
     wire clk_pix;
@@ -157,7 +157,7 @@ module draw_ball(
     //draw menu
     reg menu_draw;
     reg menu_border;
-    reg score_based = 0;
+    wire score_based;
     
     //reg button_ctrl;
     
@@ -227,22 +227,7 @@ module draw_ball(
         animate = (y == 480 && x == 0);
     end
     
-    reg button_ctrl;
-    always @ (posedge clk_pix)
-    begin
-        if(state == menu)
-        begin
-            if(animate)
-            begin
-                if(p1_up && ~button_ctrl)
-                begin
-                    score_based = ~score_based;
-                    button_ctrl = 1;
-                end
-                else if(button_ctrl) button_ctrl = 0;
-            end
-        end
-    end
+    menu_ctrl controller_menu(p1_up, p1_down, animate, state, menu, score_based);
     
     
     //colision detection
