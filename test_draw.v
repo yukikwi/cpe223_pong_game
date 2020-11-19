@@ -22,34 +22,19 @@
 
 module draw_ball(
     input clk,
-    input [0:0]sw,
-    input [1:0] JA,
-    input [1:0] JB,
+    input [2:0]sw,
+    input wire btnU,
+    input wire btnL,
+    input wire btnR,
+    input wire btnD,
+    input wire btnC,
     output wire hsync,
     output wire vsync,
     output reg[11:0] rgb,
-    output [3:0] debugled
+    output [5:0] led
     );
-    
-    wire btnU;
-    wire btnL;
-    wire btnR;
-    wire btnD;
-    wire clk_2;
-    wire [1:0] out_controller1;
-    breadboard controller1(JA, clk  , out_controller1);
-    wire [1:0] out_controller2;
-    breadboard controller2(JB, clk  , out_controller2);
-    assign btnD = ~out_controller1[0];
-    assign btnU = ~out_controller1[1];
-    assign btnL = ~out_controller2[0];
-    assign btnR = ~out_controller2[1];
-    assign debugled = {out_controller1, JB};
-    
-//    wire h_sync, v_sync;
     wire [9:0] x,y;
     wire clk_pix;
-//    reg data_en;
     
     vga_sync display (.clk(clk), .reset(sw[0]), .hsync(hsync), 
                         .vsync(vsync), .video_on(), .p_tick(clk_pix), .x(x), .y(y));
@@ -72,46 +57,75 @@ module draw_ball(
     
     //game state
     integer state, next_state;
-    parameter start = 0, play = 1, end_point = 2;
-    
-    //debug state
-    assign debugled = state;
+    parameter menu = 0, set = 1, start = 2, play = 3, end_point = 4, end_game = 5;
+    wire delayed;
     
     wire p1_up = btnU;
     wire p1_down = btnD;
     wire p2_up = btnL;
     wire p2_down = btnR;
     wire launch = btnC;  
-//    integer right_score, left_score;
     
-//    assign led[4:0] = right_score[4:0];
-//    assign led[15:11] = left_score[4:0];    
+    reg start_player;
+    integer pre_launch;
+    
     initial 
         begin 
-            state = start; 
-//            left_score = 0;
-//            right_score = 0;
+            pre_launch = 0;
+            state = menu; 
         end
-    always @ (*)
+    reg [3:0] led_worker = 4'b0000;
+    wire clk_f;
+    fuckingcounter clk_fm(clk, clk_f);
+    assign led[0] = pre_launch;
+    assign led[1] = launch;
+    assign led[2] = led_worker[0];
+    assign led[3] = led_worker[1];
+    assign led[4] = led_worker[2];
+    assign led[5] = led_worker[3];
+    always @ (clk_f or left_hit or right_hit)
     begin
         case(state)
+        menu:
+                begin
+                    if(pre_launch == 1 && launch == 0)
+                            begin
+                                next_state = start;
+                                led_worker[4] = 1;
+                            end
+                    else
+                        begin
+                            if(launch == 1)
+                            begin
+                                led_worker[1] <= 1;
+                                pre_launch = 1;
+                            end
+                            else
+                            begin
+                                led_worker[2] <= 1;
+                                pre_launch = 0;
+                            end
+                        end
+                end
         start:
                 begin
-                    if (launch)
-                        next_state = play;
+                    led_worker[0] = 1;
+                    if(launch == 1)
+                        begin
+                            next_state = play;
+                        end
                     else next_state = start;
                 end
         play:
                 begin
                     if (left_hit || right_hit)
                     begin
-//                        if(left_hit)
-//                            right_score = right_score + 1;
-//                        if(right_hit)
-//                            left_score = left_score + 1;
                         next_state = end_point;
                     end
-                    else next_state = play;
+                    else 
+                        begin
+                            next_state = play;
+                        end
                 end
         end_point:
                 begin
@@ -126,14 +140,85 @@ module draw_ball(
         state <= next_state;
     end
     
+        // 7seg//score
+    reg [4:0] score_p1;
+    reg [4:0] score_p2;
+    wire [6:0] displayP1_first;
+    wire [6:0] displayP1_second;
+    wire [6:0] displayP2_first;
+    wire [6:0] displayP2_second;
+    wire seg_firstP1;
+    wire seg_secondP1;
+    wire seg_firstP2;
+    wire seg_secondP2;
+    wire clk1Hz;
+    
+    initial begin
+        score_p1 = 5'b0;
+        score_p2 = 5'b0;
+    end
+    
+    //scoring
+    wire [4:0] right_score, left_score;
+    counter couter_p1(right_hit, sw[1], left_score);
+    counter couter_p2(left_hit, sw[1], right_score);
+    always @ (left_score)
+    begin
+        score_p1 = left_score;
+    end
+    always @ (right_score)
+    begin
+        score_p2 = right_score;
+    end
+    
+    display_score score_player1(score_p1 , displayP1_first , displayP1_second);
+    display_score score_player2(score_p2 , displayP2_first , displayP2_second);
+    
+    display_seg show_scoreP1First(displayP1_first , 242 , border_width + 15 , x , y , seg_firstP1);
+    display_seg show_scoreP1Second(displayP1_second , 276 , border_width + 15 , x , y , seg_secondP1);
+    display_seg show_scoreP2First(displayP2_first , 340 , border_width + 15 , x , y , seg_firstP2);
+    display_seg show_scoreP2Second(displayP2_second , 374 , border_width + 15 , x , y , seg_secondP2);
+    //end 7seg
+    //End scoring
+    
     //drawing start here --------------------------------
+    
+    //draw menu
+    reg menu_draw;
+    reg menu_border;
+    wire score_based;
+    
+    //reg button_ctrl;
+    
+
+    
+    always @ (score_based)
+    begin
+        if(state == menu)
+        begin
+            menu_draw = (x >= 160) && (x < 480) && ((y >= 190 && y < 250) || (y >= 270 && y < 330));
+            if (score_based)
+            begin
+                menu_border = (x >= 158 && x <482 && y >= 188 && y <252);
+            end
+            else
+            begin
+                menu_border = (x >= 158 && x <482 && y >= 268 && y <332);
+            end
+        end
+        else menu_draw = 0;
+    end
     
     //draw ball here
     reg ball_draw;
     always @ (*)
     begin
-        ball_draw = (x < ball_x + ball_size)&&(x >= ball_x)&&(y < ball_y + ball_size)&&(y >= ball_y);
+        if (state == play || state == start || state == end_point)
+        begin
+            ball_draw = (x < ball_x + ball_size)&&(x >= ball_x)&&(y < ball_y + ball_size)&&(y >= ball_y);
+        end
     end
+    
     reg border_H;
     reg border_V;
     
@@ -154,8 +239,11 @@ module draw_ball(
     
     always @ (*)
     begin
-        p1_draw = (x >= p_offset + border_width) && (x < p_offset + border_width + p_width) && (y >= p1_y) && (y < p1_y + p_high);
-        p2_draw = (x >= H_screen - (p_offset + border_width + p_width)) && (x < H_screen - (p_offset + border_width)) && (y >= p2_y) && (y < p2_y + p_high);
+        if (state == play || state == start || state == end_point)
+        begin
+            p1_draw = (x >= p_offset + border_width) && (x < p_offset + border_width + p_width) && (y >= p1_y) && (y < p1_y + p_high);
+            p2_draw = (x >= H_screen - (p_offset + border_width + p_width)) && (x < H_screen - (p_offset + border_width)) && (y >= p2_y) && (y < p2_y + p_high);
+        end
     end
     
     //------------------------------------------------
@@ -165,6 +253,9 @@ module draw_ball(
     begin
         animate = (y == 480 && x == 0);
     end
+    
+    menu_ctrl controller_menu(p1_up, p1_down, animate, state, menu, score_based);
+    
     
     //colision detection
     reg p1_col, p2_col;
@@ -182,19 +273,28 @@ module draw_ball(
             if(p2_draw) p2_col <= 1;
         end
     end
-
+    
     //ball animation
     always @ (posedge clk_pix)
     begin
         if (state == start)
         begin
-            ball_x <= border_width + p_offset + p_width;
-            ball_y <= 235;
+            if (start_player == 0)
+            begin
+                ball_x <= border_width + p_offset + p_width;
+                ball_y <= 235;
+            end
+            else
+            begin
+                ball_x <= H_screen - (border_width + p_offset + p_width + ball_size);
+                ball_y <= 235;
+            end
             right_hit <= 0;
             left_hit <= 0;
-            
         end
-        else if (animate)
+//        else if (state == play)
+//        begin
+        if (animate)
         begin
             if(p1_col) //p1_collision
             begin
@@ -209,10 +309,12 @@ module draw_ball(
             else if (ball_x >= H_screen - (ball_size + ball_speed_x + border_width))
             begin
                   right_hit <= 1;
+                  start_player <= 1;
             end
             else if(ball_x < border_width + 1)
             begin
                   left_hit <= 1;
+                  start_player <= 0;
             end
             else ball_x = (dx)?ball_x - ball_speed_x : ball_x + ball_speed_x;
             
@@ -227,6 +329,7 @@ module draw_ball(
                 ball_y <= ball_y + ball_speed_y;
             end
             else ball_y = (dy)?ball_y - ball_speed_y : ball_y + ball_speed_y;
+//            end
         end
     end
     
@@ -239,72 +342,63 @@ module draw_ball(
             p1_y <= 192;
             p2_y <= 192;
         end
-        if(animate)
-        begin
-            if (p1_up)
+//        else if(state == play)
+//        begin
+            if(animate)
             begin
-                if(p1_y > border_width)
-                    p1_y <= p1_y - p_speed;
-            end
-            else if (p1_down)
-            begin
-                if(p1_y < V_screen - (border_width + p_high))
-                    p1_y <= p1_y + p_speed;
-            end
-            
-            if (p2_up)
-            begin
-                if(p2_y > border_width)
-                    p2_y <= p2_y - p_speed;
-            end
-            else if (p2_down)
-            begin
-                if(p2_y < V_screen - (border_width + p_high))
-                    p2_y <= p2_y + p_speed;
-            end
+                if (p1_up)
+                begin
+                    if(p1_y > border_width)
+                        p1_y <= p1_y - p_speed;
+                end
+                else if (p1_down)
+                begin
+                    if(p1_y < V_screen - (border_width + p_high))
+                        p1_y <= p1_y + p_speed;
+                end
+                
+                if (p2_up)
+                begin
+                    if(p2_y > border_width)
+                        p2_y <= p2_y - p_speed;
+                end
+                else if (p2_down)
+                begin
+                    if(p2_y < V_screen - (border_width + p_high))
+                        p2_y <= p2_y + p_speed;
+                end
+//            end
         end
     end
+    wire display_menu;
+    display_select_mode dmenu(201 , 100 , x , y , display_menu);
     
-    //score
-    reg [4:0] score_p1;
-    reg [4:0] score_p2;
-    wire [6:0] displayP1_first;
-    wire [6:0] displayP1_second;
-    wire [6:0] displayP2_first;
-    wire [6:0] displayP2_second;
-    wire seg_firstP1;
-    wire seg_secondP1;
-    wire seg_firstP2;
-    wire seg_secondP2;
-    wire clk1Hz;
-    
-    initial begin
-        score_p1 = 5'b0;
-        score_p2 = 5'b0;
-    end
-    
-    divider clk1Hz_divide(clk , clk1Hz);
-    always @(posedge clk1Hz)
-        score_p1 = score_p1 + 1;
-    display_score score_player1(score_p1 , displayP1_first , displayP1_second);
-    display_score score_player2(score_p2 , displayP2_first , displayP2_second);
-    
-    display_seg show_scoreP1First(displayP1_first , 242 , border_width + 15 , x , y , seg_firstP1);
-    display_seg show_scoreP1Second(displayP1_second , 276 , border_width + 15 , x , y , seg_secondP1);
-    display_seg show_scoreP2First(displayP2_first , 340 , border_width + 15 , x , y , seg_firstP2);
-    display_seg show_scoreP2Second(displayP2_second , 374 , border_width + 15 , x , y , seg_secondP2);
-    
-    always @ (posedge clk_pix)
+    always @ (posedge clk)
     begin
-        if(border_H || border_V || seg_firstP1 || seg_secondP1 || seg_firstP2 || seg_secondP2)
+        if(border_H || border_V)
             rgb <= 12'hfff;
-        else if(ball_draw)
-            rgb <= 12'h3f0;
-        else if(p1_draw)
-            rgb <= 12'h03F;
-        else if(p2_draw)
-            rgb <= 12'hf00;
-        else rgb = 12'h000;
+        if(state == menu)
+        begin
+            if(display_menu)
+                rgb <= 12'hf00;
+            else if(menu_draw)
+                rgb <= 12'hfff; //white
+            else if(menu_border)
+                rgb <= 12'hAAA;
+            else rgb = 12'h000;
+        end
+        else if(state == start || state == play)
+        begin
+            if(seg_firstP1 || seg_secondP1 || seg_firstP2 || seg_secondP2)
+                rgb <= 12'hfff;
+            else if(ball_draw)
+                rgb <= 12'h3f0;
+            else if(p1_draw)
+                rgb <= 12'h03F; //Red
+            else if(p2_draw)
+                rgb <= 12'hf00;
+            else rgb = 12'h000;
+        end
     end
     
 endmodule
