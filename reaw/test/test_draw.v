@@ -31,7 +31,11 @@ module draw_ball(
     output wire hsync,
     output wire vsync,
     output reg[11:0] rgb,
+<<<<<<< HEAD
     output [5:0] led
+=======
+    output [4:0] led
+>>>>>>> master
     );
     wire [9:0] x,y;
     wire clk_pix;
