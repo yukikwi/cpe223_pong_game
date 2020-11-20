@@ -31,41 +31,41 @@ module state_control(
     begin
         case(state)
         menu:
-                begin
-                    if(pre_launch == 1 && launch == 0)
-                            begin
-                                state = set;
-                            end
-                    else
-                        begin
-                            if(launch == 1)
+            begin
+                if(pre_launch == 1 && launch == 0)
+                    begin
+                        state = set;
+                    end
+                else
+                    begin
+                        if(launch == 1)
                             begin
                                 pre_launch = 1;
                             end
-                            else
+                        else
                             begin
                                 pre_launch = 0;
                             end
-                        end
-                end
+                    end
+            end
         set:
-                begin
-                    if(pre_launch == 1 && launch == 0)
-                            begin
-                                state = start;
-                            end
-                    else
+            begin
+                if(pre_launch == 1 && launch == 0)
                         begin
-                            if(launch == 1)
+                            state = start;
+                        end
+                else
+                    begin
+                        if(launch == 1)
                             begin
                                 pre_launch = 1;
                             end
-                            else
+                        else
                             begin
                                 pre_launch = 0;
                             end
-                        end
-                end
+                    end
+            end
         start:
                 begin
                     if(launch)
@@ -77,21 +77,21 @@ module state_control(
         play:
                 begin
                     if (left_hit || right_hit)
-                    begin
-                        state = end_point;
-                    end
+                        begin
+                            state = end_point;
+                        end
                     else 
-                    begin
-                        state = play;
-                    end
+                        begin
+                            state = play;
+                        end
                 end
         end_point:
                 begin
-                if(reset)
-                begin
-                    state = end_game;
-                end
-                else state = start;
+                    if(reset)
+                        begin
+                            state = end_game;
+                        end
+                    else state = start;
                 end
         end_game:
                 begin
