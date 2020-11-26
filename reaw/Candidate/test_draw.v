@@ -436,8 +436,8 @@ module draw_ball(
         end
         else 
             begin   
-                  store_left_hit = 0;
-                  store_right_hit = 0;
+                store_left_hit = 0;
+                store_right_hit = 0;
                 left_hit = 0;
                 right_hit = 0;
             end
@@ -501,7 +501,7 @@ module draw_ball(
                 draw <= 1;
                 rgb <= 12'hf00;
             end
-            else if(menu_draw || border_H || border_V)
+            else if(menu_draw)
                 rgb <= 12'hfff; //white
             else if(menu_border)
                 rgb <= 12'hAAA;
@@ -509,7 +509,7 @@ module draw_ball(
         end
         else if(state == set)
         begin
-            if(display_set_score || border_H || border_V)
+            if(display_set_score)
                 rgb <= 12'hfff;
             else rgb = 12'h000;
         end
