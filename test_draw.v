@@ -174,12 +174,12 @@ module draw_ball(
         state <= next_state;
     end
     
-    reg draw_end;
-    always @ (clk_pix)
-    begin
-        if(state == end_game)
-            draw_end = (x>=20 && x<40) || (y>=20 && y<40);
-    end
+//    reg draw_end;
+//    always @ (clk_pix)
+//    begin
+//        if(state == end_game)
+//            draw_end = (x>=20 && x<40) || (y>=20 && y<40);
+//    end
     
     
         // 7seg//score
@@ -466,12 +466,15 @@ module draw_ball(
     wire display_menu;
     display_select_mode dmenu(201 , 80 , x , y , display_menu);
     //display setscore
-    wire display_setscore;
-    display_setscore dsetscore(max_score, x, y, display_setscore);
+    wire display_set_score;
+    display_setscore dsetscore(max_score, x, y, display_set_score);
+    //display endgame
+    wire display_end_game;
+    display_endgame dend(276 , 220 , x , y , display_end_game);
     
     always @ (posedge clk)
     begin
-        if(border_H || border_V || draw_end)
+        if(border_H || border_V || display_end_game)
             rgb <= 12'hfff;
         else if(state == menu)
         begin
@@ -483,7 +486,7 @@ module draw_ball(
                 rgb <= 12'hAAA;
             else rgb = 12'h000;
         end
-        else if(state == set && display_setscore)
+        else if(state == set && display_set_score)
             rgb <= 12'hfff;
         else if((state == play || state == start || state == end_point) && (seg_firstP1 || seg_secondP1 || seg_firstP2 || seg_secondP2 ))
             rgb <= 12'hfff;

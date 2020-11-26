@@ -274,16 +274,14 @@ module draw_ball(
     begin
         if(state == menu)
         begin
-            menu_draw = (x >= 192) && (x < 448) && ((y >= 160 && y < 240) || (y >= 320 && y < 400));
+            menu_draw = (x >= 192) && (x < 448) && ((y >= 200 && y < 260) || (y >= 280 && y < 340));
             if (score_based)
             begin
-                menu_border = (((x >= 190) && (x <192) || (x >= 448) && (x < 450)) && (y >= 160 && y <240)) || 
-                                (((y >= 158) && (y <160) || (y >= 240) && (y < 242)) && (x >= 190 && x <450));
+                menu_border = (x >= 190 && x < 450) && (y >= 198 && y < 262);
             end
             else
             begin
-                menu_border = (((x >= 190) && (x <192) || (x >= 448) && (x < 450)) && (y >= 160+160 && y <240+160)) || 
-                                (((y >= 158+160) && (y <160+160) || (y >= 240+160) && (y < 242+160)) && (x >= 190 && x <450)); 
+                menu_border = (x >= 190 && x < 450) && (y >= 278 && y < 342);
             end
         end
         else menu_draw = 0;
@@ -468,12 +466,16 @@ module draw_ball(
     wire display_menu;
     display_select_mode dmenu(201 , 100 , x , y , display_menu);
     //display setscore
-    wire display_setscore;
-    display_setscore dsetscore(max_score, x, y, display_setscore);
+    wire display_set_score;
+    display_setscore dsetscore(max_score, x, y, display_set_score);
+    //display end
+    wire display_end_game;
+    display_endgame dend(276 , 220 , x , y , display_end_game);
+    
     
     always @ (posedge clk)
     begin
-        if(border_H || border_V || menu_draw || draw_end)
+        if(border_H || border_V)
             rgb <= 12'hfff;
         else if(state == menu)
         begin
@@ -485,7 +487,9 @@ module draw_ball(
                 rgb <= 12'hAAA;
             else rgb = 12'h000;
         end
-        else if(state == set && display_setscore)
+        else if(state == set && display_set_score)
+            rgb <= 12'hfff;
+        else if(state == end_game && display_end_game)
             rgb <= 12'hfff;
         else if((state == play || state == start || state == end_point) && (seg_firstP1 || seg_secondP1 || seg_firstP2 || seg_secondP2 ))
             rgb <= 12'hfff;
