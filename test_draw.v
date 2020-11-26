@@ -31,7 +31,7 @@ module draw_ball(
     output wire hsync,
     output wire vsync,
     output reg[11:0] rgb,
-    output [5:0] led
+    output [7:0] led
     );
     wire [9:0] x,y;
     wire clk_pix;
@@ -52,11 +52,13 @@ module draw_ball(
     
     reg dx, dy;
     
-    reg right_hit = 0;
-    reg left_hit = 0;
+    reg right_hit;
+    reg left_hit;
     
     //game state
-    integer state, next_state;
+    integer state = 0;
+    integer next_state;
+//    wire [31:0] state;
     parameter menu = 0, set = 1, start = 2, play = 3, end_point = 4, end_game = 5;
     wire delayed;
     
@@ -69,48 +71,64 @@ module draw_ball(
     reg start_player;
     integer pre_launch;
     
+    wire [4:0] max_score;
+    reg [4:0] score_p1;
+    reg [4:0] score_p2;
+    
+    reg reset = 0;
+//    reg reset_speed;
+//    reg reset_score;
+    wire clk_25Hz;
+    divide clk_div_5Hz(clk, clk_25Hz);
+    
     initial 
         begin 
             pre_launch = 0;
-            state = menu; 
         end
-    reg [3:0] led_worker = 4'b0000;
+        
     wire clk_f;
+    
     fuckingcounter clk_fm(clk, clk_f);
-    assign led[0] = pre_launch;
-    assign led[1] = launch;
-    assign led[2] = led_worker[0];
-    assign led[3] = led_worker[1];
-    assign led[4] = led_worker[2];
-    assign led[5] = led_worker[3];
-    always @ (clk_f or left_hit or right_hit)
+    
+    //state_control scontroller(clk_f, left_hit, right_hit, launch, reset, state);
+    reg p_reset;
+    reg state_ctrl;
+    reg state_ctrl2;
+    //wire state_ctrl2 = state_ctrl | left_hit | right_hit | reset;
+    
+    always @ (state_ctrl, left_hit, right_hit, reset)
+    begin
+        if(state_ctrl || left_hit || right_hit)
+            state_ctrl2 = 1;
+        else state_ctrl2 = 0;
+    end 
+        
+    always @ (posedge clk_pix)
+    begin
+        if(launch)
+            state_ctrl = 1;
+        else state_ctrl = 0;
+    end
+    
+    always @ (posedge state_ctrl2)
     begin
         case(state)
         menu:
-                begin
-                    if(pre_launch == 1 && launch == 0)
-                            begin
-                                next_state = start;
-                                led_worker[4] = 1;
-                            end
-                    else
-                        begin
-                            if(launch == 1)
-                            begin
-                                led_worker[1] <= 1;
-                                pre_launch = 1;
-                            end
-                            else
-                            begin
-                                led_worker[2] <= 1;
-                                pre_launch = 0;
-                            end
-                        end
-                end
+            begin
+                p_reset = 0;
+                if(launch)
+                    next_state = set;
+            end
+        set:
+            begin
+                p_reset = 0;
+                if(launch)
+                    next_state = start;
+            end
         start:
                 begin
-                    led_worker[0] = 1;
-                    if(launch == 1)
+                    p_reset = 0;
+                    if(launch)
                         begin
                             next_state = play;
                         end
@@ -118,31 +136,54 @@ module draw_ball(
                 end
         play:
                 begin
+                    p_reset = 0;
                     if (left_hit || right_hit)
                     begin
                         next_state = end_point;
                     end
                     else 
-                        begin
-                            next_state = play;
-                        end
+                    begin
+                        next_state = play;
+                    end
                 end
         end_point:
                 begin
-                    next_state = start;
+                    p_reset = 0;
+                    if(reset)
+                    begin
+                        next_state = end_game;
+                    end
+                    else 
+                    begin
+                        next_state = start;
+                    end
                 end
-            
+        end_game:
+                begin
+                    p_reset = 1;
+                    if(launch)
+                        next_state = menu;     
+                end          
         endcase 
     end
-    
+    assign led[7] = state_ctrl2;
+    assign led[6] = left_hit;
+    assign led[5] = right_hit;
     always @ (posedge clk_pix)
     begin
         state <= next_state;
     end
     
+    reg draw_end;
+    always @ (clk_pix)
+    begin
+        if(state == end_game)
+            draw_end = (x>=20 && x<40) || (y>=20 && y<40);
+    end
+    
+    
         // 7seg//score
-    reg [4:0] score_p1;
-    reg [4:0] score_p2;
+
     wire [6:0] displayP1_first;
     wire [6:0] displayP1_second;
     wire [6:0] displayP2_first;
@@ -151,17 +192,17 @@ module draw_ball(
     wire seg_secondP1;
     wire seg_firstP2;
     wire seg_secondP2;
-    wire clk1Hz;
+
     
     initial begin
         score_p1 = 5'b0;
         score_p2 = 5'b0;
     end
-    
     //scoring
     wire [4:0] right_score, left_score;
-    counter couter_p1(right_hit, sw[1], left_score);
-    counter couter_p2(left_hit, sw[1], right_score);
+    counter couter_p1(right_hit, p_reset, left_score);
+    counter couter_p2(left_hit, p_reset, right_score);
+    
     always @ (left_score)
     begin
         score_p1 = left_score;
@@ -190,20 +231,57 @@ module draw_ball(
     
     //reg button_ctrl;
     
-
+    
+    //set scores
+    reg add, sub;
+    always @(posedge clk_25Hz)
+    begin
+        if(state == set)
+        begin
+            if(btnU)
+            begin
+                add = 1;
+            end
+            else if (btnD)
+            begin
+                sub = 1;
+            end
+            else
+            begin
+                add <= 0;
+                sub <= 0;
+            end
+        end
+    end
+    
+    set_scores set_scores(add, sub, max_score);
+    assign led[4:0] = max_score;
+//    assign led[15:13] = next_state[2:0];
+//    assign led[12:10] = state[2:0];
+    
+    //compare score
+    always @ (score_p1 or score_p2)
+    begin
+        if (score_p1 == max_score)
+           reset = 1;
+        else if (score_p2 == max_score)
+           reset = 1;
+        else reset = 0;
+    end
+    
     
     always @ (score_based)
     begin
         if(state == menu)
         begin
-            menu_draw = (x >= 160) && (x < 480) && ((y >= 190 && y < 250) || (y >= 270 && y < 330));
+            menu_draw = (x >= 192) && (x < 448) && ((y >= 200 && y < 260) || (y >= 280 && y < 340));
             if (score_based)
             begin
-                menu_border = (x >= 158 && x <482 && y >= 188 && y <252);
+                menu_border = (x >= 190 && x < 450) && (y >= 198 && y < 262);
             end
             else
             begin
-                menu_border = (x >= 158 && x <482 && y >= 268 && y <332);
+                menu_border = (x >= 190 && x < 450) && (y >= 278 && y < 342);
             end
         end
         else menu_draw = 0;
@@ -224,8 +302,11 @@ module draw_ball(
     
     always @ (*)
     begin
-        border_H = (x < H_screen) && ((y < border_width) || (y >= V_screen - border_width && y < V_screen));
-        border_V = (x < border_width) || (x >= H_screen - border_width && x < H_screen) && (y < V_screen);
+        if(state == start || state == play || state == end_point)
+        begin
+            border_H = (x < H_screen) && ((y < border_width) || (y >= V_screen - border_width && y < V_screen));
+            border_V = (x < border_width) || (x >= H_screen - border_width && x < H_screen) && (y < V_screen);
+        end
     end
     
     //paddle draw
@@ -269,8 +350,14 @@ module draw_ball(
         end
         else if (ball_draw)
         begin
-            if(p1_draw) p1_col <= 1;
-            if(p2_draw) p2_col <= 1;
+            if(p1_draw) 
+            begin 
+                p1_col <= 1;
+            end
+            if(p2_draw)
+            begin 
+                p2_col <= 1;
+            end
         end
     end
     
@@ -292,8 +379,8 @@ module draw_ball(
             right_hit <= 0;
             left_hit <= 0;
         end
-//        else if (state == play)
-//        begin
+        else if (state == play)
+        begin
         if (animate)
         begin
             if(p1_col) //p1_collision
@@ -329,8 +416,13 @@ module draw_ball(
                 ball_y <= ball_y + ball_speed_y;
             end
             else ball_y = (dy)?ball_y - ball_speed_y : ball_y + ball_speed_y;
-//            end
+            end
         end
+        else 
+            begin   
+                left_hit = 0;
+                right_hit = 0;
+            end
     end
     
     //paddle animation
@@ -370,14 +462,18 @@ module draw_ball(
 //            end
         end
     end
+    //display menu
     wire display_menu;
-    display_select_mode dmenu(201 , 100 , x , y , display_menu);
+    display_select_mode dmenu(201 , 80 , x , y , display_menu);
+    //display setscore
+    wire display_setscore;
+    display_setscore dsetscore(max_score, x, y, display_setscore);
     
     always @ (posedge clk)
     begin
-        if(border_H || border_V)
+        if(border_H || border_V || draw_end)
             rgb <= 12'hfff;
-        if(state == menu)
+        else if(state == menu)
         begin
             if(display_menu)
                 rgb <= 12'hf00;
@@ -387,18 +483,17 @@ module draw_ball(
                 rgb <= 12'hAAA;
             else rgb = 12'h000;
         end
-        else if(state == start || state == play)
-        begin
-            if(seg_firstP1 || seg_secondP1 || seg_firstP2 || seg_secondP2)
-                rgb <= 12'hfff;
-            else if(ball_draw)
-                rgb <= 12'h3f0;
-            else if(p1_draw)
-                rgb <= 12'h03F; //Red
-            else if(p2_draw)
-                rgb <= 12'hf00;
-            else rgb = 12'h000;
-        end
+        else if(state == set && display_setscore)
+            rgb <= 12'hfff;
+        else if((state == play || state == start || state == end_point) && (seg_firstP1 || seg_secondP1 || seg_firstP2 || seg_secondP2 ))
+            rgb <= 12'hfff;
+        else if(ball_draw)
+            rgb <= 12'h3f0;
+        else if(p1_draw)
+            rgb <= 12'h03F;
+        else if(p2_draw)
+            rgb <= 12'hf00;
+        else rgb = 12'h000;
     end
     
 endmodule

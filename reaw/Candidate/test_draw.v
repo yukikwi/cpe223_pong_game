@@ -421,7 +421,7 @@ module draw_ball(
             end
         end
         else 
-           begin   
+            begin   
                 left_hit = 0;
                 right_hit = 0;
             end
@@ -464,12 +464,28 @@ module draw_ball(
 //            end
         end
     end
+    //display menu
+    wire display_menu;
+    display_select_mode dmenu(201 , 100 , x , y , display_menu);
+    //display setscore
+    wire display_setscore;
+    display_setscore dsetscore(max_score, x, y, display_setscore);
     
     always @ (posedge clk)
     begin
-        if(draw_end)
-            rgb <= 12'h3f0;
-        else if(border_H || border_V || menu_draw)
+        if(border_H || border_V || menu_draw || draw_end)
+            rgb <= 12'hfff;
+        else if(state == menu)
+        begin
+            if(display_menu)
+                rgb <= 12'hf00;
+            else if(menu_draw)
+                rgb <= 12'hfff; //white
+            else if(menu_border)
+                rgb <= 12'hAAA;
+            else rgb = 12'h000;
+        end
+        else if(state == set && display_setscore)
             rgb <= 12'hfff;
         else if((state == play || state == start || state == end_point) && (seg_firstP1 || seg_secondP1 || seg_firstP2 || seg_secondP2 ))
             rgb <= 12'hfff;
@@ -477,7 +493,7 @@ module draw_ball(
             rgb <= 12'h3f0;
         else if(p1_draw)
             rgb <= 12'h03F;
-        else if(p2_draw || menu_border)
+        else if(p2_draw)
             rgb <= 12'hf00;
         else rgb = 12'h000;
     end
