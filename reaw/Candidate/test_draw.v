@@ -482,7 +482,7 @@ module draw_ball(
     end
     //display menu
     wire display_menu;
-    display_select_mode dmenu(201 , 100 , x , y , display_menu);
+    display_select_mode dmenu(201 , 80 , x , y , display_menu);
     //display setscore
     wire display_set_score;
     display_setscore dsetscore(max_score, x, y, display_set_score);
