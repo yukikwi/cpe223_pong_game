@@ -57,8 +57,8 @@ module draw_ball(
     reg store_right_hit = 0;
     reg store_left_hit = 0;
     //game state
-    integer state = 0;
-    integer next_state;
+    reg [2:0] state = 0;
+    reg [2:0] next_state;
 //    wire [31:0] state;
     parameter menu = 0, set = 1, start = 2, play = 3, end_point = 4, end_game = 5;
     wire delayed;
@@ -496,9 +496,11 @@ module draw_ball(
     draw <= 0;
         if(state == menu)
         begin
-            draw <= 1;
             if(display_menu)
+            begin
+                draw <= 1;
                 rgb <= 12'hf00;
+            end
             else if(menu_draw || border_H || border_V)
                 rgb <= 12'hfff; //white
             else if(menu_border)
