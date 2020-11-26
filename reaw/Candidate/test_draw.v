@@ -31,7 +31,7 @@ module draw_ball(
     output wire hsync,
     output wire vsync,
     output reg[11:0] rgb,
-    output [7:0] led
+    output [11:0] led
     );
     wire [9:0] x,y;
     wire clk_pix;
@@ -54,7 +54,8 @@ module draw_ball(
     
     reg right_hit;
     reg left_hit;
-    
+    reg store_right_hit = 0;
+    reg store_left_hit = 0;
     //game state
     integer state = 0;
     integer next_state;
@@ -76,6 +77,8 @@ module draw_ball(
     reg [4:0] score_p2;
     
     reg reset = 0;
+    
+    reg store_reset = 0;
 //    reg reset_speed;
 //    reg reset_score;
     wire clk_25Hz;
@@ -98,8 +101,9 @@ module draw_ball(
     
     always @ (state_ctrl, left_hit, right_hit, reset)
     begin
-        if(state_ctrl || left_hit || right_hit)
+        if(state_ctrl || left_hit || right_hit )
             state_ctrl2 = 1;
+        else if(state == end_point) state_ctrl2 = clk_pix;
         else state_ctrl2 = 0;
     end 
         
@@ -137,7 +141,7 @@ module draw_ball(
         play:
                 begin
                     p_reset = 0;
-                    if (left_hit || right_hit)
+                    if (store_left_hit || store_right_hit)
                     begin
                         next_state = end_point;
                     end
@@ -166,9 +170,12 @@ module draw_ball(
                 end          
         endcase 
     end
+    
+    assign led[11:9] = state[2:0];
+    assign led[8] = store_reset;
     assign led[7] = state_ctrl2;
-    assign led[6] = left_hit;
-    assign led[5] = right_hit;
+    assign led[6] = store_left_hit;
+    assign led[5] = store_right_hit;
     always @ (posedge clk_pix)
     begin
         state <= next_state;
@@ -258,14 +265,19 @@ module draw_ball(
     assign led[4:0] = max_score;
 //    assign led[15:13] = next_state[2:0];
 //    assign led[12:10] = state[2:0];
-    
     //compare score
     always @ (score_p1 or score_p2)
     begin
         if (score_p1 == max_score)
+           begin
            reset = 1;
+           store_reset = 1;
+           end
         else if (score_p2 == max_score)
+           begin
            reset = 1;
+           store_reset = 1;
+           end
         else reset = 0;
     end
     
@@ -376,6 +388,8 @@ module draw_ball(
                 ball_x <= H_screen - (border_width + p_offset + p_width + ball_size);
                 ball_y <= 235;
             end
+            store_right_hit = 0;
+            store_left_hit = 0;
             right_hit <= 0;
             left_hit <= 0;
         end
@@ -395,11 +409,13 @@ module draw_ball(
             end
             else if (ball_x >= H_screen - (ball_size + ball_speed_x + border_width))
             begin
+                  store_right_hit = 1;
                   right_hit <= 1;
                   start_player <= 1;
             end
             else if(ball_x < border_width + 1)
             begin
+                  store_left_hit = 1;
                   left_hit <= 1;
                   start_player <= 0;
             end
@@ -420,6 +436,8 @@ module draw_ball(
         end
         else 
             begin   
+                  store_left_hit = 0;
+                  store_right_hit = 0;
                 left_hit = 0;
                 right_hit = 0;
             end
