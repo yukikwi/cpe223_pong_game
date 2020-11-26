@@ -33,5 +33,5 @@ module display_endgame(
     char_n End_n(start_x + 31 , start_y , x , y , display_End[1]);
     char_d End_d(start_x + 62 , start_y , x , y , display_End[2]);
     
-    assign display = |display_End;
+    assign display = (|display_End);
 endmodule

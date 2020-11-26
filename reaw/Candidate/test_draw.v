@@ -31,7 +31,7 @@ module draw_ball(
     output wire hsync,
     output wire vsync,
     output reg[11:0] rgb,
-    output [11:0] led
+    output [12:0] led
     );
     wire [9:0] x,y;
     wire clk_pix;
@@ -490,34 +490,46 @@ module draw_ball(
     wire display_end_game;
     display_endgame dend(276 , 220 , x , y , display_end_game);
     
-    
-    always @ (posedge clk)
+    reg draw = 0;
+    always @ (posedge clk_pix)
     begin
-        if(border_H || border_V)
-            rgb <= 12'hfff;
-        else if(state == menu)
+    draw <= 0;
+        if(state == menu)
         begin
+            draw <= 1;
             if(display_menu)
                 rgb <= 12'hf00;
-            else if(menu_draw)
+            else if(menu_draw || border_H || border_V)
                 rgb <= 12'hfff; //white
             else if(menu_border)
                 rgb <= 12'hAAA;
             else rgb = 12'h000;
         end
-        else if(state == set && display_set_score)
-            rgb <= 12'hfff;
-        else if(state == end_game && display_end_game)
-            rgb <= 12'hfff;
-        else if((state == play || state == start || state == end_point) && (seg_firstP1 || seg_secondP1 || seg_firstP2 || seg_secondP2 ))
-            rgb <= 12'hfff;
-        else if(ball_draw)
-            rgb <= 12'h3f0;
-        else if(p1_draw)
-            rgb <= 12'h03F;
-        else if(p2_draw)
-            rgb <= 12'hf00;
-        else rgb = 12'h000;
+        else if(state == set)
+        begin
+            if(display_set_score || border_H || border_V)
+                rgb <= 12'hfff;
+            else rgb = 12'h000;
+        end
+        else if(state == end_game)
+        begin
+            if(display_end_game)
+                rgb <= 12'hfff;
+            else rgb = 12'h000;
+        end
+        else if(state == play || state == start || state == end_point)
+        begin
+            if(seg_firstP1 || seg_secondP1 || seg_firstP2 || seg_secondP2 || border_H || border_V)
+                rgb <= 12'hfff;
+            else if(ball_draw)
+                rgb <= 12'h3f0;
+            else if(p1_draw)
+                rgb <= 12'h03F;
+            else if(p2_draw)
+                rgb <= 12'hf00;
+            else rgb = 12'h000;
+        end
+        else rgb = 12'hfd0;
     end
-    
+    assign led[12] = draw;
 endmodule
