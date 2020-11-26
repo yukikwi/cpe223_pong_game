@@ -42,7 +42,7 @@ module display_setscore(
     //score seg
     display_score ScoreToSeg(score, first, second );
     
-    display_seg FirstScore(fisrt, 291, 240, x, y, display_first);
+    display_seg FirstScore(first, 291, 240, x, y, display_first);
     display_seg SecondScore(second, 291 + 31, 240, x, y, display_second);
     
     assign display = display_first | display_second | (|text);
