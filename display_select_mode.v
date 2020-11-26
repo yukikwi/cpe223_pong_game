@@ -41,17 +41,17 @@ module display_select_mode(
     char_p PongPVP_p3(start_x + 217 , start_y , x , y , display_PongPVP[6]);
     
     //display "SCORE"
-    char_s Score_s(start_x + 44 , start_y + 100 , x , y , display_Score[0]);
-    char_c Score_c(start_x + 75 , start_y + 100 , x , y , display_Score[1]);
-    char_O Score_o(start_x + 106 , start_y + 100 , x , y , display_Score[2]);
-    char_r Score_r(start_x + 137 , start_y + 100 , x , y , display_Score[3]);
-    char_e Score_e(start_x + 168 , start_y + 100 , x , y , display_Score[4]);
+    char_s Score_s(start_x + 44 , start_y + 130 , x , y , display_Score[0]);
+    char_c Score_c(start_x + 75 , start_y + 130 , x , y , display_Score[1]);
+    char_O Score_o(start_x + 106 , start_y + 130 , x , y , display_Score[2]);
+    char_r Score_r(start_x + 137 , start_y + 130 , x , y , display_Score[3]);
+    char_e Score_e(start_x + 168 , start_y + 130 , x , y , display_Score[4]);
     
     //display "TIME"
-    char_t Time_t(start_x + 59 , start_y + 180 , x , y , display_Time[0]);
-    char_i Time_i(start_x + 90 , start_y + 180 , x , y , display_Time[1]);
-    char_m Time_m(start_x + 121 , start_y + 180 , x , y , display_Time[2]);
-    char_e Time_e(start_x + 152 , start_y + 180 , x , y , display_Time[3]);
+    char_t Time_t(start_x + 59 , start_y + 210 , x , y , display_Time[0]);
+    char_i Time_i(start_x + 90 , start_y + 210 , x , y , display_Time[1]);
+    char_m Time_m(start_x + 121 , start_y + 210 , x , y , display_Time[2]);
+    char_e Time_e(start_x + 152 , start_y + 210 , x , y , display_Time[3]);
     
     assign display = |display_PongPVP | |display_Score | |display_Time;
 endmodule

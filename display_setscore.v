@@ -27,6 +27,8 @@ module display_setscore(
     output display
     );
     wire [7:0] text;
+    wire [6:0] first, second;
+    wire display_first, display_second;
     //SET SCORE
     char_s SetScore_s1(183, 140, x, y, text[0]);
     char_e SetScore_e1(214, 140, x, y, text[1]);
@@ -43,6 +45,6 @@ module display_setscore(
     display_seg FirstScore(fisrt, 291, 240, x, y, display_first);
     display_seg SecondScore(second, 291 + 31, 240, x, y, display_second);
     
-    assign display = display_first | display_second | |text;
+    assign display = display_first | display_second | (|text);
     
 endmodule
