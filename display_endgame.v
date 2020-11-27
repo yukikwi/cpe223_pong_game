@@ -21,7 +21,7 @@
 
 
 module display_endgame(
-        input  who_win,
+        input [1:0] who_win,
         input [9:0] start_x,
         input [9:0] start_y,
         input [9:0] x,
