@@ -21,17 +21,33 @@
 
 
 module display_endgame(
+        input  who_win,
         input [9:0] start_x,
         input [9:0] start_y,
         input [9:0] x,
         input [9:0] y,
-        output display
+        output display_player,
+        output display_win
     );
-    wire [2:0] display_End;
+    reg [6:0] to_seg;
+    wire [2:0] win;
+    wire [1:0] player;
+    always @(who_win)
+    begin
+        case(who_win)
+            1: to_seg = 7'b1111001;
+            2: to_seg = 7'b0100100;
+            default: to_seg = 7'b1111001;
+        endcase
+        
+    end
     //display END
-    char_e End_e(start_x , start_y , x , y , display_End[0]);
-    char_n End_n(start_x + 31 , start_y , x , y , display_End[1]);
-    char_d End_d(start_x + 62 , start_y , x , y , display_End[2]);
+    char_p P1_p(start_x , start_y , x , y , player[0]);
+    display_seg number_winner(to_seg , start_x + 31 , start_y , x , y , player[1]);
+    char_w win_w(start_x + 93 , start_y , x , y , win[0]);
+    char_i win_i(start_x + 124 , start_y , x , y , win[1]);
+    char_n win_n(start_x + 155 , start_y , x , y , win[2]);
     
-    assign display = (|display_End);
+    assign display_win = (|win);
+    assign display_player = (|player);
 endmodule

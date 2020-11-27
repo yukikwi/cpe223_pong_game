@@ -265,6 +265,8 @@ module draw_ball(
     assign led[4:0] = max_score;
 //    assign led[15:13] = next_state[2:0];
 //    assign led[12:10] = state[2:0];
+    
+    reg winner = 1;
     //compare score
     always @ (score_p1 or score_p2)
     begin
@@ -272,11 +274,13 @@ module draw_ball(
            begin
            reset = 1;
            store_reset = 1;
+           winner = 1;
            end
         else if (score_p2 == max_score)
            begin
            reset = 1;
            store_reset = 1;
+           winner = 2;
            end
         else reset = 0;
     end
@@ -487,8 +491,8 @@ module draw_ball(
     wire display_set_score;
     display_setscore dsetscore(max_score, x, y, display_set_score);
     //display end
-    wire display_end_game;
-    display_endgame dend(276 , 220 , x , y , display_end_game);
+    wire display_end_player , display_end_win;
+    display_endgame dend(winnner , 229 , 220 , x , y , display_end_player , display_win);
     
     reg draw = 0;
     always @ (posedge clk_pix)
@@ -505,19 +509,23 @@ module draw_ball(
                 rgb <= 12'hfff; //white
             else if(menu_border)
                 rgb <= 12'hAAA;
-            else rgb = 12'h000;
+            else rgb <= 12'h000;
         end
         else if(state == set)
         begin
             if(display_set_score || border_H || border_V)
                 rgb <= 12'hfff;
-            else rgb = 12'h000;
+            else rgb <= 12'h000;
         end
         else if(state == end_game)
         begin
-            if(display_end_game)
+            if(display_end_player && winner == 1)
+                rgb <= 12'h03F;
+            else if(display_end_player && winner == 2)
+                rgb <= 12'hf00;
+            else if(display_end_win)
                 rgb <= 12'hfff;
-            else rgb = 12'h000;
+            else rgb <= 12'h000;
         end
         else if(state == play || state == start || state == end_point)
         begin
@@ -529,9 +537,9 @@ module draw_ball(
                 rgb <= 12'h03F;
             else if(p2_draw)
                 rgb <= 12'hf00;
-            else rgb = 12'h000;
+            else rgb <= 12'h000;
         end
-        else rgb = 12'hfd0;
+        else rgb <= 12'hfd0;
     end
     assign led[12] = draw;
 endmodule
