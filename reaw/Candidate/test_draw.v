@@ -29,7 +29,7 @@ module draw_ball(
     output wire hsync,
     output wire vsync,
     output reg[11:0] rgb,
-    output [15:0] led
+    output [12:0] led
     );
     wire [9:0] x,y;
     wire clk_pix;
@@ -277,7 +277,7 @@ module draw_ball(
 //    assign led[15:13] = next_state[2:0];
 //    assign led[12:10] = state[2:0];
     
-    reg winner = 1;
+    reg [1:0] winner;
     //compare score
     always @ (score_p1 or score_p2)
     begin
@@ -503,7 +503,7 @@ module draw_ball(
     display_setscore dsetscore(max_score, x, y, display_set_score);
     //display end
     wire display_end_player , display_end_win;
-    display_endgame dend(winnner , 229 , 220 , x , y , display_end_player , display_win);
+    display_endgame dend(winnner , 229 , 220 , x , y , display_end_player , display_end_win);
     
     reg draw = 0;
     always @ (posedge clk_pix)
