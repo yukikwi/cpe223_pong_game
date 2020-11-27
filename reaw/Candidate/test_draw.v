@@ -23,15 +23,13 @@
 module draw_ball(
     input clk,
     input [2:0]sw,
-    input wire btnU,
-    input wire btnL,
-    input wire btnR,
-    input wire btnD,
+    input [1:0] JA,
+    input [1:0] JB,
     input wire btnC,
     output wire hsync,
     output wire vsync,
     output reg[11:0] rgb,
-    output [12:0] led
+    output [15:0] led
     );
     wire [9:0] x,y;
     wire clk_pix;
@@ -62,7 +60,15 @@ module draw_ball(
 //    wire [31:0] state;
     parameter menu = 0, set = 1, start = 2, play = 3, end_point = 4, end_game = 5;
     wire delayed;
-    
+    wire btnU;
+    wire btnL;
+    wire btnR;
+    wire btnD;
+    wire clk_2;
+    assign btnD = JA[0];
+    assign btnU = JA[1];
+    assign btnL = JB[0];
+    assign btnR = JB[1];
     wire p1_up = btnU;
     wire p1_down = btnD;
     wire p2_up = btnL;
@@ -167,6 +173,11 @@ module draw_ball(
                     p_reset = 1;
                     if(launch)
                         next_state = menu;     
+                end
+        default:
+                begin
+                    p_reset = 0;
+                    next_state = menu;
                 end          
         endcase 
     end
@@ -305,7 +316,7 @@ module draw_ball(
     
     //draw ball here
     reg ball_draw;
-    always @ (*)
+    always @ (posedge clk_pix)
     begin
         if (state == play || state == start || state == end_point)
         begin
@@ -334,7 +345,7 @@ module draw_ball(
     reg [2:0] p_speed = 2;
     reg p1_draw, p2_draw;
     
-    always @ (*)
+    always @ (posedge clk_pix)
     begin
         if (state == play || state == start || state == end_point)
         begin
@@ -346,7 +357,7 @@ module draw_ball(
     //------------------------------------------------
     
     reg animate;
-    always @ (*)
+    always @ (x, y)
     begin
         animate = (y == 480 && x == 0);
     end
@@ -440,8 +451,8 @@ module draw_ball(
         end
         else 
             begin   
-                  store_left_hit = 0;
-                  store_right_hit = 0;
+                store_left_hit = 0;
+                store_right_hit = 0;
                 left_hit = 0;
                 right_hit = 0;
             end
@@ -505,7 +516,7 @@ module draw_ball(
                 draw <= 1;
                 rgb <= 12'hf00;
             end
-            else if(menu_draw || border_H || border_V)
+            else if(menu_draw)
                 rgb <= 12'hfff; //white
             else if(menu_border)
                 rgb <= 12'hAAA;
@@ -513,7 +524,7 @@ module draw_ball(
         end
         else if(state == set)
         begin
-            if(display_set_score || border_H || border_V)
+            if(display_set_score)
                 rgb <= 12'hfff;
             else rgb <= 12'h000;
         end
