@@ -37,43 +37,43 @@ module display_seg(
     begin
         if(~seg[0])
             begin
-                if((x >= (start_x + 5) && x < (start_x + 21)) && (y >= start_y && y < (start_y + 4))) 
+                if((x >= (start_x + 5) && x < (start_x + 21)) && (y >= start_y && y < (start_y + 5))) 
                     display_temp[0] = 1;
                 else display_temp[0] = 0;
             end
         if(~seg[1])
             begin
-                if(((x >= start_x + 22) && x < (start_x + 26)) && (y >= (start_y + 5) && y < (start_y + 17)))
+                if(((x >= start_x + 21) && x < (start_x + 26)) && (y >= (start_y + 5) && y < (start_y + 17)))
                     display_temp[1] = 1;
                 else display_temp[1] = 0;
             end
         if(~seg[2])
             begin
-                if(((x >= start_x + 22) && x < (start_x + 26)) && (y >= (start_y + 23) && y < (start_y + 35)))
+                if(((x >= start_x + 21) && x < (start_x + 26)) && (y >= (start_y + 22) && y < (start_y + 34)))
                     display_temp[2] = 1;
                 else display_temp[2] = 0;
             end
         if(~seg[3])
             begin
-                if((x >= (start_x + 5) && x < (start_x + 21)) && (y >= (start_y + 36) && y < (start_y + 40)))
+                if((x >= (start_x + 5) && x < (start_x + 21)) && (y >= (start_y + 34) && y < (start_y + 39)))
                     display_temp[3] = 1;
                 else display_temp[3] = 0;
             end
         if(~seg[4])
             begin
-                if((x >= start_x && x < (start_x + 4)) && (y >= (start_y + 23) && y < (start_y + 35)))
+                if((x >= start_x && x < (start_x + 5)) && (y >= (start_y + 22) && y < (start_y + 34)))
                     display_temp[4] = 1;
                 else display_temp[4] = 0;
             end
         if(~seg[5])
             begin
-                if((x >= start_x && x < (start_x + 4)) && (y >= (start_y + 5) && y < (start_y + 17)))
+                if((x >= start_x && x < (start_x + 5)) && (y >= (start_y + 5) && y < (start_y + 17)))
                     display_temp[5] = 1;
                 else display_temp[5] = 0;
             end
         if(~seg[6])
             begin
-                if((x >= (start_x + 5) && x < (start_x + 21)) && (y >= (start_y + 18) && y < (start_y + 22)))
+                if((x >= (start_x + 5) && x < (start_x + 21)) && (y >= (start_y + 17) && y < (start_y + 22)))
                     display_temp[6] = 1;
                 else display_temp[6] = 0;
             end
