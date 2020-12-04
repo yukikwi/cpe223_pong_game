@@ -21,7 +21,7 @@
 
 
 module display_set_time (
-    input [7:0] max_time,
+    input [31:0] max_time,
     input [9:0] x,
     input [9:0] y,
     output display
@@ -54,8 +54,8 @@ module display_set_time (
     end
     
     //time seg
-    display_score minuteToSeg(min, first_min, second_min);
-    display_score SecondToSeg(sec, first_sec, second_sec);
+    display_time minuteToSeg(min, first_min, second_min);
+    display_time SecondToSeg(sec, first_sec, second_sec);
     
     display_seg Minute(second_min, 266, 240, x, y, display_min);
     display_seg FirstSec(first_sec, 312, 240, x, y, display_sec_first);
