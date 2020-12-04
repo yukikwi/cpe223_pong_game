@@ -36,7 +36,7 @@ module counter_time_1(
     
     always @(posedge clk_in)
     begin
-        if(reset || present_time == 8'hb4)
+        if(reset || present_time == 20)
         begin
             present_time = 8'b0;
         end

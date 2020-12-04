@@ -22,6 +22,7 @@
 
 module top(
     input clk,
+    input [2:0] Ain,
     output [6:0] seg,
     output [3:0] an
     );
@@ -31,7 +32,6 @@ module top(
     reg [7:0]max_time = 20;
     reg reset;
     
-    divider_1Hz divt (clk, clk_out);
-    time_display(clk_out, max_time, reset, seg, an);
+    time_display(clk, max_time, reset, seg, an);
     
 endmodule

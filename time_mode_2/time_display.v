@@ -21,7 +21,7 @@
 
 
 module time_display(
-    input clk,
+    input orig_clk,
     input [7:0]max_time,
     input reset,
     output [6:0] seg,
@@ -30,15 +30,16 @@ module time_display(
     
 //    reg [7:0]display_time;
     wire [3:0]A, B, C; 
-    wire mux_to_bcd;
+    wire [3:0] mux_to_bcd;
     wire clk_out_di_switch;
     
-    reg [1:0]selector = 1;
-
+    reg [1:0]selector = 0;
+    
+    divider_1Hz divt (orig_clk, clk);
     counter_time_1 count_1 (clk, max_time, reset, A, B, C);
     mux12_to_4 mux12 (A, B, C, selector, mux_to_bcd);
     bcdto7seg bcd_to7seg (mux_to_bcd,seg);
-    divide_switch switching (clk,clk_out_di_switch);
+    divide_switch switching (orig_clk,clk_out_di_switch);
     
     always @(posedge clk_out_di_switch)
     begin 
@@ -50,12 +51,12 @@ module time_display(
                 end
             1:
                 begin
-                    an = 4'b1011;
+                    an = 4'b1110;
                     selector = 2;
                 end
             2:
                 begin
-                    an = 4'b1110;
+                    an = 4'b1011;
                     selector = 0;
                 end
             default:
