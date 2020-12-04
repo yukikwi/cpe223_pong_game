@@ -40,17 +40,17 @@ module display_set_time (
     char_e SetScore_e2(416, 140, x, y, text[6]);
     
     always @(x or y) begin
-        if(x >= 240 && x < 245 && ((y >= 150 && y < 155) || (y >= 165 && y < 170)))
+        if(x >= 302 && x < 307 && ((y >= 250 && y < 255) || (y >= 265 && y < 270)))
             dot = 1;
         else
             dot = 0;
     end
     
-    reg [3:0] min;
-    reg [5:0] sec;
+    integer min;
+    integer sec;
     always @(max_time) begin
-        min <= max_time / 60;
-        sec <= max_time % 60;
+        min = max_time / 60;
+        sec = max_time % 60;
     end
     
     //time seg
@@ -58,8 +58,8 @@ module display_set_time (
     display_score SecondToSeg(sec, first_sec, second_sec);
     
     display_seg Minute(second_min, 266, 240, x, y, display_min);
-    display_seg FirstSec(first_sec, 286, 240, x, y, display_sec_first);
-    display_seg SecondSec(second_sec, 317, 240, x, y, display_sec_second);
+    display_seg FirstSec(first_sec, 312, 240, x, y, display_sec_first);
+    display_seg SecondSec(second_sec, 343, 240, x, y, display_sec_second);
     
     assign display = display_min | display_sec_first | display_sec_second | (|text) | dot;
 endmodule
