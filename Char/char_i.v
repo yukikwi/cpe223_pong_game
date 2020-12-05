@@ -21,8 +21,8 @@
 
 
 module char_i(
-    input [9:0] start_x,
-    input [9:0] start_y,
+    input [31:0] start_x,
+    input [31:0] start_y,
     input [9:0] x,
     input [9:0] y,
     output reg display
@@ -30,7 +30,7 @@ module char_i(
     
     initial 
         display = 0;
-    always @*
+    always @(x or y)
     begin
         //up and down
         if ((x >= start_x + 5) && (x < start_x + 21) && (((y >= start_y) && (y < start_y + 5)) || ((y >= start_y + 35) && (y < start_y + 40))))

@@ -21,8 +21,8 @@
 
 
 module char_s(
-    input [9:0] start_x,
-    input [9:0] start_y,
+    input [31:0] start_x,
+    input [31:0] start_y,
     input [9:0] x,
     input [9:0] y,
     output reg display
@@ -30,7 +30,7 @@ module char_s(
     
     initial
         display = 0;
-    always @*
+    always @(x or y)
     begin
     
         if((x >= start_x + 5) && (x < start_x + 21)
