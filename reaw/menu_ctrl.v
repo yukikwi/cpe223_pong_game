@@ -21,7 +21,8 @@
 
 
 module menu_ctrl(
-    input p1_up, p1_down, animate, state, menu, 
+    input p1_up, p1_down, animate, 
+    input [2:0] state, menu, 
     output reg out
     );
     
