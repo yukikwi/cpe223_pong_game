@@ -21,10 +21,10 @@
 
 
 module display_draw(
-    input start_x,
-    input start_y,
-    input x,
-    input y,
+    input [9:0]start_x,
+    input [9:0]start_y,
+    input [9:0]x,
+    input [9:0]y,
     output display
 
     );
