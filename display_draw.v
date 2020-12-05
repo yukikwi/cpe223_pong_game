@@ -21,8 +21,8 @@
 
 
 module display_draw(
-    input [9:0] start_x,
-    input [9:0] start_y,
+    input [31:0] start_x,
+    input [31:0] start_y,
     input [9:0] x,
     input [9:0] y,
     output display
@@ -33,5 +33,5 @@ module display_draw(
     char_r DRAW_r(start_x + 31, start_y, x, y, display_DRAW[1]);
     char_a DRAW_a(start_x + 62, start_y, x, y, display_DRAW[2]);
     char_w DRAW_w(start_x + 93, start_y, x, y, display_DRAW[3]);
-    assign display = (|display_DRAW);
+    assign display = |display_DRAW;
 endmodule
