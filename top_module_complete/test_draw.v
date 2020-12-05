@@ -111,6 +111,8 @@ module draw_ball(
     reg state_ctrl2;
     //wire state_ctrl2 = state_ctrl | left_hit | right_hit | reset;
     
+    wire time_out;
+    
     always @ (state_ctrl, left_hit, right_hit, reset, time_out)
     begin
         if(state_ctrl || left_hit || right_hit || time_out)
@@ -289,7 +291,6 @@ module draw_ball(
    //store time
     wire [7:0] max_time_wire;
     integer max_time;
-    wire time_out;
     wire time_en;
     assign time_en = ((state == play) && score_based)?1:0;
     
@@ -377,7 +378,7 @@ module draw_ball(
     reg border_H;
     reg border_V;
     
-    always @ (*)
+    always @ (posedge clk_pix)
     begin
         if(state == start || state == play || state == end_point)
         begin
