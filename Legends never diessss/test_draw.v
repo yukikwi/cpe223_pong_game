@@ -43,8 +43,8 @@ module draw_ball(
     reg [9:0] V_screen = 480;
     
     reg [7:0] ball_size = 10;
-    reg [3:0] ball_speed_x = 2;
-    reg [3:0] ball_speed_y = 2;
+    reg [9:0] ball_speed_x;
+    reg [9:0] ball_speed_y;
     reg [9:0] ball_x = 0;
     reg [9:0] ball_y = 235;
     
@@ -112,6 +112,12 @@ module draw_ball(
     //wire state_ctrl2 = state_ctrl | left_hit | right_hit | reset;
     
     wire time_out;
+    
+    initial
+    begin
+        ball_speed_x = 2;
+        ball_speed_y = 2;
+    end
     
     always @ (state_ctrl, left_hit, right_hit, reset, time_out)
     begin
@@ -207,6 +213,8 @@ module draw_ball(
     begin
         state <= next_state;
     end
+    
+    reg p1_col, p2_col;
     
     reg draw_end;
     always @ (clk_pix)
@@ -393,7 +401,7 @@ module draw_ball(
     reg [4:0] p_offset = 20;
     reg [9:0] p1_y = 192;
     reg [9:0] p2_y = 192;
-    reg [2:0] p_speed = 2;
+    reg [9:0] p_speed = 4;
     reg p1_draw, p2_draw;
     
     always @ (posedge clk_pix)
@@ -417,7 +425,6 @@ module draw_ball(
     
     
     //colision detection
-    reg p1_col, p2_col;
     
     always @ (posedge clk_pix)
     begin
@@ -458,6 +465,8 @@ module draw_ball(
             store_left_hit = 0;
             right_hit <= 0;
             left_hit <= 0;
+            ball_speed_x <= 2;
+            ball_speed_y <= 2;
         end
         else if (state == play)
         begin
@@ -467,11 +476,15 @@ module draw_ball(
             begin
                 dx <= 0;
                 ball_x <= ball_x + ball_speed_x;
+                ball_speed_x = ball_speed_x + 1;
+                ball_speed_y = ball_speed_y + 1;
             end
             else if(p2_col)//p2 collision
             begin
                 dx <= 1; 
                 ball_x <= ball_x - ball_speed_x;
+                ball_speed_x = ball_speed_x + 1;
+                ball_speed_y = ball_speed_y + 1;
             end
             else if (ball_x >= H_screen - (ball_size + ball_speed_x + border_width))
             begin
